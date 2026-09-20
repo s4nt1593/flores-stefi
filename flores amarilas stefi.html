@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para Ti 💛</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #31103f 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+        }
+        .font-cursive { font-family: 'Great Vibes', cursive; }
+        
+        /* Pantalla Inicial */
+        #start-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f172a; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100;
+            transition: opacity 1s ease;
+        }
+
+        /* Ramo de Tulipanes */
+        .flower-container { position: relative; display: flex; flex-direction: column; align-items: center; }
+        
+        .tulip {
+            position: relative; width: 55px; height: 75px;
+            background: linear-gradient(to top, #f59e0b, #fef08a);
+            border-radius: 0 0 30px 30px;
+            box-shadow: inset 0 -8px 15px rgba(217, 119, 6, 0.5), 0 0 25px rgba(253, 224, 71, 0.7);
+            z-index: 2;
+            animation: pulse 4s ease-in-out infinite alternate;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        .tulip::before, .tulip::after {
+            content: ''; position: absolute; top: 0; width: 28px; height: 50px;
+            background: #fef08a; border-radius: 28px 28px 0 0;
+        }
+        .tulip::before { left: 0; transform: rotate(-18deg); }
+        .tulip::after { right: 0; transform: rotate(18deg); }
+        
+        .stem-green {
+            width: 8px; height: 170px;
+            background: linear-gradient(to right, #16a34a, #4ade80);
+            margin: 0 auto; border-radius: 4px; z-index: 1;
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+        }
+        .leaf {
+            position: absolute; top: 90px; width: 35px; height: 70px;
+            background: linear-gradient(to right, #15803d, #22c55e);
+            border-radius: 0 35px 0 35px; z-index: 0;
+        }
+
+        /* Jarrón de Cristal Avanzado */
+        .glass-vase {
+            width: 150px; height: 140px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            border-radius: 25px 25px 65px 65px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 0 25px rgba(255,255,255,0.3);
+            position: absolute; bottom: -85px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+        }
+
+        /* Pétalos Cayendo */
+        .falling-petal {
+            position: fixed; top: -10%; z-index: 1;
+            background: #fef08a; width: 16px; height: 16px;
+            border-radius: 16px 0px 16px 0px; opacity: 0.8;
+            box-shadow: 0 0 8px #fde047;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(400deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="text-white relative">
+
+    <!-- AUDIO DE FONDO -->
+    <audio id="bg-audio" loop src="flores.mp3"></audio>
+
+    <!-- Control de Música Flotante -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="music-toggle" onclick="toggleAudio()" class="bg-yellow-500/20 hover:bg-yellow-500/40 border border-yellow-400/40 text-yellow-300 p-3 rounded-full backdrop-blur-md transition-all shadow-lg">
+            <i id="music-icon" class="fas fa-music text-lg"></i>
+        </button>
+    </div>
+
+    <!-- Pantalla Inicial -->
+    <div id="start-screen">
+        <div class="text-6xl mb-6 animate-bounce">💌</div>
+        <button onclick="startExperience()" class="bg-transparent border-2 border-yellow-400 text-yellow-300 font-bold py-4 px-10 rounded-full text-xl hover:bg-yellow-400 hover:text-gray-950 transition duration-300 shadow-[0_0_20px_rgba(253,224,71,0.5)]">
+            Tengo algo especial para ti...
+        </button>
+    </div>
+
+    <!-- Contenedor de Pétalos -->
+    <div id="petals-container" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></div>
+
+    <!-- Contenido Principal -->
+    <div id="main-content" class="flex flex-col items-center justify-center p-6 min-h-screen opacity-0 transition-opacity duration-1000 hidden relative z-10">
+        
+        <div class="text-center max-w-lg mx-auto my-auto">
+            <h1 class="text-6xl md:text-7xl font-cursive text-yellow-300 mb-2 drop-shadow-[0_0_20px_rgba(253,224,71,0.7)]">
+                Flores Amarillas
+            </h1>
+            <p class="text-yellow-100/90 text-sm md:text-base mb-12">Para sacarte una sonrisa hoy y alegrar tu día 🌟</p>
+
+            <!-- Arreglo Floral con Jarrón -->
+            <div class="relative h-64 w-full flex items-end justify-center gap-3 mb-20">
+                <!-- Tulipán Izquierda -->
+                <div class="flower-container transform -rotate-12 translate-x-3">
+                    <div class="tulip"></div>
+                    <div class="leaf" style="transform: rotate(-35deg); left: -22px;"></div>
+                    <div class="stem-green"></div>
+                </div>
+                <!-- Tulipán Centro -->
+                <div class="flower-container z-10 -translate-y-6">
+                    <div class="tulip" style="transform: scale(1.15);"></div>
+                    <div class="leaf" style="transform: rotate(35deg); left: 18px;"></div>
+                    <div class="stem-green" style="height: 190px;"></div>
+                </div>
+                <!-- Tulipán Derecha -->
+                <div class="flower-container transform rotate-12 -translate-x-3">
+                    <div class="tulip"></div>
+                    <div class="leaf" style="transform: rotate(35deg); left: 18px;"></div>
+                    <div class="stem-green"></div>
+                </div>
+                <!-- Jarrón -->
+                <div class="glass-vase"></div>
+            </div>
+
+            <!-- Tarjeta -->
+            <div class="bg-black/30 backdrop-blur-md border border-yellow-500/30 p-8 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] text-center">
+                <p class="text-2xl text-yellow-300 font-semibold mb-3">¡Para una gran amiga! 🌼</p>
+                <p class="text-gray-200 text-sm md:text-base leading-relaxed">
+                    Las flores amarillas simbolizan la alegría, la luz y la amistad verdadera. Gracias por estar siempre y por ser una persona tan genial.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function createPetals() {
+            const container = document.getElementById('petals-container');
+            for (let i = 0; i < 30; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'falling-petal';
+                petal.style.left = Math.random() * 100 + 'vw';
+                petal.style.animationDuration = (Math.random() * 6 + 4) + 's';
+                petal.style.animationDelay = (Math.random() * 5) + 's';
+                container.appendChild(petal);
+            }
+        }
+
+        function startExperience() {
+            const audio = document.getElementById('bg-audio');
+            audio.play().catch(e => console.log("Error al reproducir audio:", e));
+            
+            const startScreen = document.getElementById('start-screen');
+            const mainContent = document.getElementById('main-content');
+            
+            createPetals();
+            startScreen.style.opacity = '0';
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                mainContent.classList.remove('hidden');
+                setTimeout(() => mainContent.style.opacity = '1', 50);
+            }, 1000);
+        }
+
+        function toggleAudio() {
+            const audio = document.getElementById('bg-audio');
+            const icon = document.getElementById('music-icon');
+            if (audio.paused) {
+                audio.play();
+                icon.className = 'fas fa-music text-lg';
+            } else {
+                audio.pause();
+                icon.className = 'fas fa-volume-mute text-lg';
+            }
+        }
+    </script>
+</body>
+</html>
